@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana-pv
+  namespace: monitoring
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-monitoring
+  nfs:
+    server: 192.168.25.139
+    path: "/Monitoring/grafana-data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-monitoring
+  resources:
+    requests:
+      storage: 5Gi

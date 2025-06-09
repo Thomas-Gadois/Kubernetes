@@ -1,0 +1,37 @@
+victoria-metrics-single:
+  server:
+    persistentVolume:
+      enabled: true
+      existingClaim: victoriametrics-pvc
+      size: 50Gi
+    
+    retentionPeriod: "12"
+    
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    
+    service:
+      type: ClusterIP
+      port: 8428
+    
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: "nginx"
+      hosts:
+        - victoriametrics.your-domain.com
+
+  vmagent:
+    enabled: true
+    remoteWriteUrls:
+      - http://victoria-metrics-single-server:8428/api/v1/write
+
+  vmalert:
+    enabled: true
+    datasource:
+      url: http://victoria-metrics-single-server:8428

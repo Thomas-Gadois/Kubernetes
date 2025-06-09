@@ -1,0 +1,44 @@
+# helm-charts/loki/values-fixed.yaml
+loki:
+  persistence:
+    enabled: true
+    existingClaim: loki-pvc
+    size: 30Gi
+  
+  config:
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+    
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+    
+    storage_config:
+      boltdb_shipper:
+        active_index_directory: /loki/boltdb-shipper-active
+        cache_location: /loki/boltdb-shipper-cache
+        shared_store: filesystem
+      filesystem:
+        directory: /loki/chunks
+
+  service:
+    type: ClusterIP
+    port: 3100
+
+  # Configuration ingress simplifiée
+  ingress:
+    enabled: false  # Désactiver temporairement
+
+promtail:
+  enabled: true
+  config:
+    serverPort: 3101
+    clients:
+      - url: http://loki:3100/loki/api/v1/push

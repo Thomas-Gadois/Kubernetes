@@ -1,0 +1,80 @@
+adminUser: admin
+adminPassword: "your-secure-password"
+
+persistence:
+  enabled: true
+  existingClaim: grafana-pvc
+  size: 5Gi
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+  hosts:
+    - grafana.your-domain.com
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server:80
+        access: proxy
+        isDefault: true
+      
+      - name: VictoriaMetrics
+        type: prometheus
+        url: http://victoria-metrics-single-server:8428
+        access: proxy
+      
+      - name: Loki
+        type: loki
+        url: http://loki:3100
+        access: proxy
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    kubernetes-cluster:
+      gnetId: 7249
+      revision: 1
+      datasource: Prometheus
+    
+    kubernetes-pods:
+      gnetId: 6417
+      revision: 1
+      datasource: Prometheus
+    
+    loki-logs:
+      gnetId: 13639
+      revision: 2
+      datasource: Loki
+
+plugins:
+  - grafana-piechart-panel
+  - grafana-worldmap-panel
